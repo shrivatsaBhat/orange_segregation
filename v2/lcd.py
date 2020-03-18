@@ -3,19 +3,13 @@
 # HD44780 LCD Test Script for
 # Raspberry Pi
 #
-# Author : Matt Hawkins
-# Site   : http://www.raspberrypi-spy.co.uk
-# 
-# Date   : 03/08/2012
-#
-
 # The wiring for the LCD is as follows:
 # 1 : GND
 # 2 : 5V
 # 3 : Contrast (0-5V)*
 # 4 : RS (Register Select)
 # 5 : R/W (Read Write)       - GROUND THIS PIN
-# 6 : Enable or Strobe
+# 6 : Enable 
 # 7 : Data Bit 0             - NOT USED
 # 8 : Data Bit 1             - NOT USED
 # 9 : Data Bit 2             - NOT USED
@@ -24,10 +18,9 @@
 # 12: Data Bit 5
 # 13: Data Bit 6
 # 14: Data Bit 7
-# 15: LCD Backlight +5V**
+# 15: LCD Backlight (0-5V)*
 # 16: LCD Backlight GND
 
-#import
 import RPi.GPIO as GPIO
 import time
 
@@ -52,6 +45,17 @@ LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
 E_PULSE = 0.00005
 E_DELAY = 0.00005
 
+GPIO.setmode(GPIO.BCM)       # Use BCM GPIO number system
+GPIO.setup(LCD_E, GPIO.OUT)  # E
+GPIO.setup(LCD_RS, GPIO.OUT) # RS
+GPIO.setup(LCD_D4, GPIO.OUT) # DB4
+GPIO.setup(LCD_D5, GPIO.OUT) # DB5
+GPIO.setup(LCD_D6, GPIO.OUT) # DB6
+GPIO.setup(LCD_D7, GPIO.OUT) # DB7
+GPIO.setup(LED_ON, GPIO.OUT) # Backlight enable  
+
+GPIO.setwarnings(False) # Set gpio warnings off
+
 def main():
   # Main program block
 
@@ -70,7 +74,7 @@ def main():
   lcd_byte(LCD_LINE_1, LCD_CMD)
   lcd_string("Rasbperry Pi",2)
   lcd_byte(LCD_LINE_2, LCD_CMD)
-  lcd_string("Model B",2)
+  lcd_string("Model B+",2)
 
   time.sleep(3) # 3 second delay
 
@@ -84,9 +88,9 @@ def main():
 
   # Send some right justified text
   lcd_byte(LCD_LINE_1, LCD_CMD)
-  lcd_string("Raspberrypi-spy",3)
+  lcd_string("Orange sorting",3)
   lcd_byte(LCD_LINE_2, LCD_CMD)
-  lcd_string(".co.uk",3)
+  lcd_string("Mechine",3)
 
   time.sleep(30)
 
@@ -94,21 +98,13 @@ def main():
   GPIO.output(LED_ON, False)
 
 def lcd_init():
-  GPIO.setmode(GPIO.BCM)       # Use BCM GPIO numbers
-  GPIO.setup(LCD_E, GPIO.OUT)  # E
-  GPIO.setup(LCD_RS, GPIO.OUT) # RS
-  GPIO.setup(LCD_D4, GPIO.OUT) # DB4
-  GPIO.setup(LCD_D5, GPIO.OUT) # DB5
-  GPIO.setup(LCD_D6, GPIO.OUT) # DB6
-  GPIO.setup(LCD_D7, GPIO.OUT) # DB7
-  GPIO.setup(LED_ON, GPIO.OUT) # Backlight enable  
   # Initialise display
-  lcd_byte(0x33,LCD_CMD)
-  lcd_byte(0x32,LCD_CMD)
-  lcd_byte(0x28,LCD_CMD)
-  lcd_byte(0x0C,LCD_CMD)  
-  lcd_byte(0x06,LCD_CMD)
-  lcd_byte(0x01,LCD_CMD)  
+  lcd_byte(0x33,LCD_CMD)  # Goto 4bit operating Mode
+  lcd_byte(0x32,LCD_CMD)  # Goto 4bit operating Mode
+  lcd_byte(0x28,LCD_CMD)  # Funtion set: 4-bit, 2 Line, 5X7 Matrix
+  lcd_byte(0x0C,LCD_CMD)  # Cursor OFF, display ON, Blink OFF
+  lcd_byte(0x06,LCD_CMD)  # Increment cursor (shift cursor to right)
+  lcd_byte(0x01,LCD_CMD)  # Clear display screen  
 
 def lcd_string(message,style):
   # Send string to display
